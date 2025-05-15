@@ -1,0 +1,231 @@
+export type Database = {
+  public: {
+    Tables: {
+      ongs: {
+        Row: {
+          id: string
+          created_at: string | null
+          user_id: string | null
+          nome: string | null
+          nome_fantasia: string | null
+          descricao_curta: string | null
+          descricao_completa: string | null
+          ano_fundacao: number | null
+          causa: string | null
+          publico_alvo: string | null
+          logo_url: string | null
+          imagem_capa_url: string | null
+          endereco: string | null
+          cidade: string | null
+          estado: string | null
+          cep: string | null
+          telefone: string | null
+          email: string | null
+          site: string | null
+          facebook: string | null
+          instagram: string | null
+          cnpj: string | null
+          responsavel: string | null
+          cargo_responsavel: string | null
+          status: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string | null
+          user_id?: string | null
+          nome?: string | null
+          nome_fantasia?: string | null
+          descricao_curta?: string | null
+          descricao_completa?: string | null
+          ano_fundacao?: number | null
+          causa?: string | null
+          publico_alvo?: string | null
+          logo_url?: string | null
+          imagem_capa_url?: string | null
+          endereco?: string | null
+          cidade?: string | null
+          estado?: string | null
+          cep?: string | null
+          telefone?: string | null
+          email?: string | null
+          site?: string | null
+          facebook?: string | null
+          instagram?: string | null
+          cnpj?: string | null
+          responsavel?: string | null
+          cargo_responsavel?: string | null
+          status?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string | null
+          user_id?: string | null
+          nome?: string | null
+          nome_fantasia?: string | null
+          descricao_curta?: string | null
+          descricao_completa?: string | null
+          ano_fundacao?: number | null
+          causa?: string | null
+          publico_alvo?: string | null
+          logo_url?: string | null
+          imagem_capa_url?: string | null
+          endereco?: string | null
+          cidade?: string | null
+          estado?: string | null
+          cep?: string | null
+          telefone?: string | null
+          email?: string | null
+          site?: string | null
+          facebook?: string | null
+          instagram?: string | null
+          cnpj?: string | null
+          responsavel?: string | null
+          cargo_responsavel?: string | null
+          status?: string | null
+        }
+      }
+      ong_imagens: {
+        Row: {
+          id: string
+          ong_id: string
+          url: string
+          ordem: number
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          ong_id: string
+          url: string
+          ordem?: number
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          ong_id?: string
+          url?: string
+          ordem?: number
+          created_at?: string | null
+        }
+      }
+      areas_atuacao: {
+        Row: {
+          id: number
+          nome: string | null
+        }
+        Insert: {
+          id?: number
+          nome?: string | null
+        }
+        Update: {
+          id?: number
+          nome?: string | null
+        }
+      }
+      ong_areas_atuacao: {
+        Row: {
+          ong_id: string
+          area_id: number
+        }
+        Insert: {
+          ong_id: string
+          area_id: number
+        }
+        Update: {
+          ong_id?: string
+          area_id?: number
+        }
+      }
+      formas_ajuda: {
+        Row: {
+          id: number
+          nome: string | null
+        }
+        Insert: {
+          id?: number
+          nome?: string | null
+        }
+        Update: {
+          id?: number
+          nome?: string | null
+        }
+      }
+      ong_formas_ajuda: {
+        Row: {
+          ong_id: string
+          forma_id: number
+          descricao: string | null
+        }
+        Insert: {
+          ong_id: string
+          forma_id: number
+          descricao?: string | null
+        }
+        Update: {
+          ong_id?: string
+          forma_id?: number
+          descricao?: string | null
+        }
+      }
+      certificacoes: {
+        Row: {
+          id: number
+          nome: string | null
+        }
+        Insert: {
+          id?: number
+          nome?: string | null
+        }
+        Update: {
+          id?: number
+          nome?: string | null
+        }
+      }
+      ong_certificacoes: {
+        Row: {
+          ong_id: string
+          certificacao_id: number
+        }
+        Insert: {
+          ong_id: string
+          certificacao_id: number
+        }
+        Update: {
+          ong_id?: string
+          certificacao_id?: number
+        }
+      }
+      profiles: {
+        Row: {
+          id: string
+          updated_at: string | null
+          nome: string | null
+          avatar_url: string | null
+        }
+        Insert: {
+          id: string
+          updated_at?: string | null
+          nome?: string | null
+          avatar_url?: string | null
+        }
+        Update: {
+          id?: string
+          updated_at?: string | null
+          nome?: string | null
+          avatar_url?: string | null
+        }
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
