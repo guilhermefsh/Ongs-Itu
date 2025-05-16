@@ -33,6 +33,14 @@ export function Header() {
     }
 
     fetchUserData()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUserEmail(session?.user?.email || null)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [supabase])
 
   const handleSignOut = async () => {

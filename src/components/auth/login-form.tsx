@@ -28,7 +28,7 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>
 
-const initialState = { error: '' }
+const initialState = { error: '', success: false }
 
 export function LoginForm() {
   const [state, formAction] = useActionState(loginAction, initialState)

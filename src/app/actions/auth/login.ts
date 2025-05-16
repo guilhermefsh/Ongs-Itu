@@ -2,7 +2,7 @@
 
 import { z } from 'zod'
 import { getSupabaseServer } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+import { redirect } from 'next/navigation';
 
 const schema = z.object({
     email: z.string().email(),
@@ -10,25 +10,25 @@ const schema = z.object({
 })
 
 export async function loginAction(
-    prevState: { error: string },
+    prevState: { error: string, success: boolean },
     formData: FormData
-): Promise<{ error: string }> {
+): Promise<{ error: string; success: boolean }> {
     const parsed = schema.safeParse({
         email: formData.get('email'),
         password: formData.get('password'),
     })
 
     if (!parsed.success) {
-        return { error: 'Email ou senha inválidos.' }
+        return { error: 'Email ou senha inválidos.', success: false }
     }
 
     const { email, password } = parsed.data
     const supabase = getSupabaseServer()
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password })
+    console.log(data)
     if (error) {
-        return { error: error.message }
+        return { error: error.message, success: false }
     }
 
     redirect('/dashboard')

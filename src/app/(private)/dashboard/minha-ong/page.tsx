@@ -25,6 +25,9 @@ import {
     ImageIcon,
 } from "lucide-react"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
+import { Area, AreaResponse, Certification, CertificationResponse, HelpForm, HelpFormResponse, Organization } from "./types"
+
+
 
 export default function MinhaOngPage() {
     const router = useRouter()
@@ -32,18 +35,17 @@ export default function MinhaOngPage() {
 
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [ong, setOng] = useState<any | null>(null)
-    const [areasAtuacao, setAreasAtuacao] = useState<any[]>([])
-    const [formasAjuda, setFormasAjuda] = useState<any[]>([])
-    const [certificacoes, setCertificacoes] = useState<any[]>([])
-    const [galeriaImagens, setGaleriaImagens] = useState<string[]>([])
+    const [organization, setOrganization] = useState<Organization | null>(null)
+    const [areas, setAreas] = useState<Area[]>([])
+    const [helpForms, setHelpForms] = useState<HelpForm[]>([])
+    const [certifications, setCertifications] = useState<Certification[]>([])
+    const [galleryImages, setGalleryImages] = useState<string[]>([])
 
     useEffect(() => {
-        const fetchOngData = async () => {
+        const fetchOrganizationData = async () => {
             try {
                 setLoading(true)
 
-                // Buscar usuário atual
                 const {
                     data: { user },
                     error: userError,
@@ -58,97 +60,99 @@ export default function MinhaOngPage() {
                     return
                 }
 
-                // Buscar ONG do usuário
-                const { data: ongData, error: ongError } = await supabase
+                const { data: orgData, error: orgError } = await supabase
                     .from("ongs")
                     .select("*")
                     .eq("user_id", user.id)
                     .single()
 
-                if (ongError && ongError.code !== "PGRST116") {
-                    // PGRST116 é o código para "nenhum resultado encontrado"
-                    throw new Error("Erro ao buscar dados da ONG: " + ongError.message)
+                if (orgError && orgError.code !== "PGRST116") {
+                    throw new Error("Erro ao buscar dados da ONG: " + orgError.message)
                 }
 
-                if (!ongData) {
-                    setOng(null)
+                if (!orgData) {
+                    setOrganization(null)
                     setLoading(false)
                     return
                 }
 
-                setOng(ongData)
+                setOrganization(orgData)
 
-                // Buscar galeria de imagens
-                const { data: galeriaData, error: galeriaError } = await supabase
+                const { data: galleryData, error: galleryError } = await supabase
                     .from("ong_imagens")
                     .select("url")
-                    .eq("ong_id", ongData.id)
+                    .eq("ong_id", orgData.id)
                     .order("ordem", { ascending: true })
 
-                if (galeriaError) {
-                    console.error("Erro ao buscar galeria de imagens:", galeriaError)
-                } else if (galeriaData) {
-                    setGaleriaImagens(galeriaData.map((item) => item.url))
+                if (galleryError) {
+                    console.error("Erro ao buscar galeria de imagens:", galleryError)
+                } else if (galleryData) {
+                    setGalleryImages(galleryData.map((item) => item.url))
                 }
 
-                // Buscar áreas de atuação
                 const { data: areasData, error: areasError } = await supabase
                     .from("ong_areas_atuacao")
                     .select(`
-            area_id,
-            areas_atuacao (
-              id,
-              nome
-            )
-          `)
-                    .eq("ong_id", ongData.id)
+                        area_id,
+                        areas_atuacao (
+                            id,
+                            nome
+                        )
+                    `)
+                    .eq("ong_id", orgData.id)
 
                 if (areasError) {
                     console.error("Erro ao buscar áreas de atuação:", areasError)
                 } else if (areasData) {
-                    setAreasAtuacao(areasData.map((item) => item.areas_atuacao))
+                    const typedAreasData = areasData as unknown as AreaResponse[]
+                    setAreas(typedAreasData.map((item) => ({
+                        id: item.areas_atuacao.id,
+                        nome: item.areas_atuacao.nome
+                    })))
                 }
 
-                // Buscar formas de ajuda
-                const { data: formasData, error: formasError } = await supabase
+                const { data: formsData, error: formsError } = await supabase
                     .from("ong_formas_ajuda")
                     .select(`
-            forma_id,
-            descricao,
-            formas_ajuda (
-              id,
-              nome
-            )
-          `)
-                    .eq("ong_id", ongData.id)
+                        forma_id,
+                        descricao,
+                        formas_ajuda (
+                            id,
+                            nome
+                        )
+                    `)
+                    .eq("ong_id", orgData.id)
 
-                if (formasError) {
-                    console.error("Erro ao buscar formas de ajuda:", formasError)
-                } else if (formasData) {
-                    setFormasAjuda(
-                        formasData.map((item) => ({
-                            ...item.formas_ajuda,
-                            descricao: item.descricao,
-                        })),
-                    )
+                if (formsError) {
+                    console.error("Erro ao buscar formas de ajuda:", formsError)
+                } else if (formsData) {
+                    const typedFormsData = formsData as unknown as HelpFormResponse[]
+                    setHelpForms(typedFormsData.map((item) => ({
+                        id: item.formas_ajuda.id,
+                        nome: item.formas_ajuda.nome,
+                        descricao: item.descricao
+                    })))
                 }
 
-                // Buscar certificações
                 const { data: certData, error: certError } = await supabase
                     .from("ong_certificacoes")
                     .select(`
-            certificacao_id,
-            certificacoes (
-              id,
-              nome
-            )
-          `)
-                    .eq("ong_id", ongData.id)
+                        certificacao_id,
+                        certificacoes (
+                            id,
+                            nome
+                        )
+                    `)
+                    .eq("ong_id", orgData.id)
 
                 if (certError) {
                     console.error("Erro ao buscar certificações:", certError)
                 } else if (certData) {
-                    setCertificacoes(certData.map((item) => item.certificacoes))
+                    const typedCertData = certData as unknown as CertificationResponse[]
+                    setCertifications(typedCertData.map((item) => ({
+                        id: item.certificacoes[0].id,
+                        nome: item.certificacoes[0].nome
+                    })))
                 }
             } catch (error: any) {
                 setError(error.message)
@@ -158,7 +162,7 @@ export default function MinhaOngPage() {
             }
         }
 
-        fetchOngData()
+        fetchOrganizationData()
     }, [router, supabase])
 
     const getStatusBadge = (status: string) => {
@@ -218,7 +222,7 @@ export default function MinhaOngPage() {
         )
     }
 
-    if (!ong) {
+    if (!organization) {
         return (
             <div className="container mx-auto py-6">
                 <Card>
@@ -243,11 +247,11 @@ export default function MinhaOngPage() {
         <div className="container mx-auto py-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight dark:text-gray-100">{ong.nome}</h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">Status: {getStatusBadge(ong.status)}</p>
+                    <h1 className="text-2xl font-bold tracking-tight dark:text-gray-100">{organization.nome}</h1>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1">Status: {getStatusBadge(organization.status)}</p>
                 </div>
                 <div className="mt-4 md:mt-0">
-                    <Button variant="outline" className="mr-2" onClick={() => router.push(`/ongs/${ong.id}`)}>
+                    <Button variant="outline" className="mr-2" onClick={() => router.push(`/ongs/${organization.id}`)}>
                         <ExternalLink className="h-4 w-4 mr-2" />
                         Ver página pública
                     </Button>
@@ -258,7 +262,7 @@ export default function MinhaOngPage() {
                 </div>
             </div>
 
-            {ong.status === "pendente" && (
+            {organization.status === "pendente" && (
                 <Alert className="mb-6 bg-amber-50 text-amber-800 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800">
                     <Clock className="h-4 w-4" />
                     <AlertTitle>Cadastro em análise</AlertTitle>
@@ -268,7 +272,7 @@ export default function MinhaOngPage() {
                 </Alert>
             )}
 
-            {ong.status === "rejeitado" && (
+            {organization.status === "rejeitado" && (
                 <Alert variant="destructive" className="mb-6">
                     <AlertCircle className="h-4 w-4" />
                     <AlertTitle>Cadastro rejeitado</AlertTitle>
@@ -299,21 +303,21 @@ export default function MinhaOngPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Nome</p>
-                                        <p className="text-base">{ong.nome}</p>
+                                        <p className="text-base">{organization.nome}</p>
                                     </div>
-                                    {ong.nome_fantasia && (
+                                    {organization.nome_fantasia && (
                                         <div>
                                             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Nome Fantasia</p>
-                                            <p className="text-base">{ong.nome_fantasia}</p>
+                                            <p className="text-base">{organization.nome_fantasia}</p>
                                         </div>
                                     )}
                                     <div>
                                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Ano de Fundação</p>
-                                        <p className="text-base">{ong.ano_fundacao}</p>
+                                        <p className="text-base">{organization.ano_fundacao}</p>
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Causa Principal</p>
-                                        <p className="text-base">{ong.causa}</p>
+                                        <p className="text-base">{organization.causa}</p>
                                     </div>
                                 </div>
                             </div>
@@ -325,21 +329,21 @@ export default function MinhaOngPage() {
                                 <div className="space-y-4">
                                     <div>
                                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Descrição Curta</p>
-                                        <p className="text-base">{ong.descricao_curta}</p>
+                                        <p className="text-base">{organization.descricao_curta}</p>
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Descrição Completa</p>
-                                        <p className="text-base whitespace-pre-line">{ong.descricao_completa}</p>
+                                        <p className="text-base whitespace-pre-line">{organization.descricao_completa}</p>
                                     </div>
                                 </div>
                             </div>
 
-                            {ong.publico_alvo && (
+                            {organization.publico_alvo && (
                                 <>
                                     <Separator />
                                     <div>
                                         <h3 className="text-lg font-medium mb-2">Público Alvo</h3>
-                                        <p className="text-base">{ong.publico_alvo}</p>
+                                        <p className="text-base">{organization.publico_alvo}</p>
                                     </div>
                                 </>
                             )}
@@ -354,11 +358,11 @@ export default function MinhaOngPage() {
                             <CardDescription>Logo, imagem de capa e galeria de fotos</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            {ong.logo_url ? (
+                            {organization.logo_url ? (
                                 <div>
                                     <h3 className="text-lg font-medium mb-2">Logo</h3>
                                     <div className="relative h-40 w-40 overflow-hidden rounded-md border border-border">
-                                        <Image src={ong.logo_url || "/placeholder.svg"} alt="Logo da ONG" fill className="object-contain" />
+                                        <Image src={organization.logo_url || "/placeholder.svg"} alt="Logo da ONG" fill className="object-contain" />
                                     </div>
                                 </div>
                             ) : (
@@ -375,12 +379,12 @@ export default function MinhaOngPage() {
 
                             <Separator />
 
-                            {ong.imagem_capa_url ? (
+                            {organization.imagem_capa_url ? (
                                 <div>
                                     <h3 className="text-lg font-medium mb-2">Imagem de Capa</h3>
                                     <div className="relative aspect-video w-full overflow-hidden rounded-md border border-border">
                                         <Image
-                                            src={ong.imagem_capa_url || "/placeholder.svg"}
+                                            src={organization.imagem_capa_url || "/placeholder.svg"}
                                             alt="Imagem de capa"
                                             fill
                                             className="object-cover"
@@ -403,10 +407,10 @@ export default function MinhaOngPage() {
 
                             <div>
                                 <h3 className="text-lg font-medium mb-2">Galeria de Imagens</h3>
-                                {galeriaImagens.length > 0 ? (
+                                {galleryImages.length > 0 ? (
                                     <Carousel className="w-full">
                                         <CarouselContent>
-                                            {galeriaImagens.map((imagem, index) => (
+                                            {galleryImages.map((imagem, index) => (
                                                 <CarouselItem key={index} className="basis-full md:basis-1/2 lg:basis-1/3">
                                                     <div className="relative aspect-video overflow-hidden rounded-md border border-border p-1">
                                                         <Image
@@ -449,74 +453,74 @@ export default function MinhaOngPage() {
                                         <Mail className="h-4 w-4 mr-2 text-gray-500" />
                                         <div>
                                             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">E-mail</p>
-                                            <p className="text-base">{ong.email}</p>
+                                            <p className="text-base">{organization.email}</p>
                                         </div>
                                     </div>
 
-                                    {ong.telefone && (
+                                    {organization.telefone && (
                                         <div className="flex items-center">
                                             <Phone className="h-4 w-4 mr-2 text-gray-500" />
                                             <div>
                                                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Telefone</p>
-                                                <p className="text-base">{ong.telefone}</p>
+                                                <p className="text-base">{organization.telefone}</p>
                                             </div>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
-                            {(ong.site || ong.facebook || ong.instagram) && (
+                            {(organization.site || organization.facebook || organization.instagram) && (
                                 <>
                                     <Separator />
                                     <div>
                                         <h3 className="text-lg font-medium mb-2">Redes Sociais</h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {ong.site && (
+                                            {organization.site && (
                                                 <div className="flex items-center">
                                                     <Globe className="h-4 w-4 mr-2 text-gray-500" />
                                                     <div>
                                                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Site</p>
                                                         <a
-                                                            href={ong.site.startsWith("http") ? ong.site : `https://${ong.site}`}
+                                                            href={organization.site.startsWith("http") ? organization.site : `https://${organization.site}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="text-blue-600 hover:underline dark:text-blue-400"
                                                         >
-                                                            {ong.site}
+                                                            {organization.site}
                                                         </a>
                                                     </div>
                                                 </div>
                                             )}
 
-                                            {ong.facebook && (
+                                            {organization.facebook && (
                                                 <div className="flex items-center">
                                                     <Facebook className="h-4 w-4 mr-2 text-gray-500" />
                                                     <div>
                                                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Facebook</p>
                                                         <a
-                                                            href={ong.facebook.startsWith("http") ? ong.facebook : `https://${ong.facebook}`}
+                                                            href={organization.facebook.startsWith("http") ? organization.facebook : `https://${organization.facebook}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="text-blue-600 hover:underline dark:text-blue-400"
                                                         >
-                                                            {ong.facebook}
+                                                            {organization.facebook}
                                                         </a>
                                                     </div>
                                                 </div>
                                             )}
 
-                                            {ong.instagram && (
+                                            {organization.instagram && (
                                                 <div className="flex items-center">
                                                     <Instagram className="h-4 w-4 mr-2 text-gray-500" />
                                                     <div>
                                                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Instagram</p>
                                                         <a
-                                                            href={ong.instagram.startsWith("http") ? ong.instagram : `https://${ong.instagram}`}
+                                                            href={organization.instagram.startsWith("http") ? organization.instagram : `https://${organization.instagram}`}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="text-blue-600 hover:underline dark:text-blue-400"
                                                         >
-                                                            {ong.instagram}
+                                                            {organization.instagram}
                                                         </a>
                                                     </div>
                                                 </div>
@@ -526,7 +530,7 @@ export default function MinhaOngPage() {
                                 </>
                             )}
 
-                            {ong.endereco && (
+                            {organization.endereco && (
                                 <>
                                     <Separator />
                                     <div>
@@ -534,9 +538,9 @@ export default function MinhaOngPage() {
                                         <div className="flex items-start">
                                             <MapPin className="h-4 w-4 mr-2 mt-1 text-gray-500" />
                                             <div>
-                                                <p className="text-base">{ong.endereco}</p>
+                                                <p className="text-base">{organization.endereco}</p>
                                                 <p className="text-base">
-                                                    {ong.cidade} - {ong.estado} {ong.cep && `CEP: ${ong.cep}`}
+                                                    {organization.cidade} - {organization.estado} {organization.cep && `CEP: ${organization.cep}`}
                                                 </p>
                                             </div>
                                         </div>
@@ -550,11 +554,11 @@ export default function MinhaOngPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Nome</p>
-                                        <p className="text-base">{ong.responsavel}</p>
+                                        <p className="text-base">{organization.responsavel}</p>
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Cargo</p>
-                                        <p className="text-base">{ong.cargo_responsavel}</p>
+                                        <p className="text-base">{organization.cargo_responsavel}</p>
                                     </div>
                                 </div>
                             </div>
@@ -569,11 +573,11 @@ export default function MinhaOngPage() {
                             <CardDescription>Como sua organização atua e como as pessoas podem ajudar</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            {areasAtuacao.length > 0 && (
+                            {areas.length > 0 && (
                                 <div>
                                     <h3 className="text-lg font-medium mb-2">Áreas de Atuação</h3>
                                     <div className="flex flex-wrap gap-2">
-                                        {areasAtuacao.map((area) => (
+                                        {areas.map((area) => (
                                             <Badge key={area.id} variant="outline">
                                                 {area.nome}
                                             </Badge>
@@ -582,13 +586,13 @@ export default function MinhaOngPage() {
                                 </div>
                             )}
 
-                            {formasAjuda.length > 0 && (
+                            {helpForms.length > 0 && (
                                 <>
                                     <Separator />
                                     <div>
                                         <h3 className="text-lg font-medium mb-2">Formas de Ajuda</h3>
                                         <div className="space-y-4">
-                                            {formasAjuda.map((forma) => (
+                                            {helpForms.map((forma) => (
                                                 <div key={forma.id}>
                                                     <h4 className="font-medium">{forma.nome}</h4>
                                                     {forma.descricao && (
@@ -611,20 +615,20 @@ export default function MinhaOngPage() {
                             <CardDescription>Documentos e certificações da sua organização</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            {ong.cnpj && (
+                            {organization.cnpj && (
                                 <div>
                                     <h3 className="text-lg font-medium mb-2">CNPJ</h3>
-                                    <p className="text-base">{ong.cnpj}</p>
+                                    <p className="text-base">{organization.cnpj}</p>
                                 </div>
                             )}
 
-                            {certificacoes.length > 0 && (
+                            {certifications.length > 0 && (
                                 <>
                                     <Separator />
                                     <div>
                                         <h3 className="text-lg font-medium mb-2">Certificações</h3>
                                         <div className="flex flex-wrap gap-2">
-                                            {certificacoes.map((cert) => (
+                                            {certifications.map((cert) => (
                                                 <Badge key={cert.id} variant="outline">
                                                     {cert.nome}
                                                 </Badge>

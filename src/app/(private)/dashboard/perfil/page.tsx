@@ -57,7 +57,6 @@ export default function PerfilPage() {
     const [isChangingPassword, setIsChangingPassword] = useState(false)
     const supabase = getSupabaseClient()
 
-    // Formulário de perfil
     const profileForm = useForm<ProfileFormValues>({
         resolver: zodResolver(profileFormSchema),
         defaultValues: {
@@ -67,7 +66,6 @@ export default function PerfilPage() {
         },
     })
 
-    // Formulário de senha
     const passwordForm = useForm<PasswordFormValues>({
         resolver: zodResolver(passwordFormSchema),
         defaultValues: {
@@ -77,7 +75,6 @@ export default function PerfilPage() {
         },
     })
 
-    // Buscar dados do usuário e perfil
     useEffect(() => {
         async function fetchUserAndProfile() {
             try {
@@ -92,7 +89,6 @@ export default function PerfilPage() {
 
                 setUser(user)
 
-                // Buscar perfil do usuário
                 const { data: profile, error } = await supabase.from("profiles").select("*").eq("id", user.id).single()
 
                 if (error) {
@@ -125,11 +121,9 @@ export default function PerfilPage() {
         fetchUserAndProfile()
     }, [router, supabase])
 
-    // Função para salvar o perfil
     async function onSubmitProfile(data: ProfileFormValues) {
         setIsSaving(true)
         try {
-            // Atualizar perfil
             const { error: profileError } = await supabase
                 .from("profiles")
                 .update({
@@ -141,7 +135,6 @@ export default function PerfilPage() {
 
             if (profileError) throw profileError
 
-            // Atualizar email se necessário
             if (user?.email !== data.email) {
                 const { error: emailError } = await supabase.auth.updateUser({
                     email: data.email,
@@ -160,7 +153,6 @@ export default function PerfilPage() {
                 description: "Suas informações foram atualizadas com sucesso.",
             })
 
-            // Recarregar a página para atualizar os dados
             router.refresh()
         } catch (error: any) {
             console.error("Erro ao atualizar perfil:", error)
@@ -174,7 +166,6 @@ export default function PerfilPage() {
         }
     }
 
-    // Função para alterar a senha
     async function onSubmitPassword(data: PasswordFormValues) {
         setIsChangingPassword(true)
         try {
@@ -202,7 +193,6 @@ export default function PerfilPage() {
         }
     }
 
-    // Função para lidar com o upload de avatar
     const handleAvatarUpload = async (file: File) => {
         try {
             if (!user) return null
@@ -211,12 +201,10 @@ export default function PerfilPage() {
             const fileName = `${user.id}-${Date.now()}.${fileExt}`
             const filePath = `avatars/${fileName}`
 
-            // Upload do arquivo para o storage
             const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file)
 
             if (uploadError) throw uploadError
 
-            // Obter a URL pública do arquivo
             const { data } = supabase.storage.from("avatars").getPublicUrl(filePath)
 
             return data.publicUrl
