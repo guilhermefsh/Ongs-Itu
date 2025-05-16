@@ -44,6 +44,7 @@ export default function RootLayout({
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <ThemeScript />
+        <link rel="icon" href="/favicon.png" />
       </head>
       <body className={inter.className}>
         <ThemeProvider defaultTheme="system" storageKey="theme">
