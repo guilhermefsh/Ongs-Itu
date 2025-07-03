@@ -3,76 +3,10 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { MapPin, Phone, Mail, Globe, Facebook, Instagram, Heart, Users } from "lucide-react"
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
-import { cookies } from "next/headers"
-
-type ONG = {
-  id: string
-  name: string
-  cause: string
-  description: string
-  image: string
-  address: string
-  phone: string
-  email: string
-  website: string
-  facebook: string
-  instagram: string
-  howToHelp: {
-    volunteering: string
-    donation: string
-    partnership: string
-  }
-}
-
-async function getOngDetails(id: string): Promise<ONG | null> {
-  const supabase = createServerComponentClient({ cookies })
-
-  const { data: ongData, error: ongError } = await supabase
-    .from("ongs")
-    .select("*")
-    .eq("id", id)
-    .eq("status", "aprovado")
-    .single()
-
-  if (ongError || !ongData) {
-    return null
-  }
-
-  const { data: formasData } = await supabase
-    .from("ong_formas_ajuda")
-    .select(`
-      forma_id,
-      descricao,
-      formas_ajuda(nome)
-    `)
-    .eq("ong_id", id)
-
-  return {
-    id: ongData.id,
-    name: ongData.nome,
-    cause: ongData.causa,
-    description: ongData.descricao_completa,
-    image: ongData.imagem_capa_url || "/images/placeholder-image.jpg",
-    address: ongData.endereco,
-    phone: ongData.telefone,
-    email: ongData.email,
-    website: ongData.site,
-    facebook: ongData.facebook,
-    instagram: ongData.instagram,
-    howToHelp: {
-      volunteering: formasData?.find((f) => f.forma_id === 1)?.descricao ||
-        "Entre em contato para saber como ajudar como voluntário.",
-      donation: formasData?.find((f) => f.forma_id === 2)?.descricao ||
-        "Entre em contato para saber como ajudar com doações.",
-      partnership: formasData?.find((f) => f.forma_id === 6)?.descricao ||
-        "Entre em contato para estabelecer parcerias."
-    }
-  }
-}
+import { useOngDetails, type ONG } from "@/hooks/use-ong-details"
 
 export default async function ONGDetailPage({ params }: { params: { id: string } }) {
-  const ong = await getOngDetails(params.id)
+  const ong = await useOngDetails(params.id)
 
   if (!ong) {
     return (

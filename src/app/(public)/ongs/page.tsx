@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useTransition } from "react"
+import { useState, useEffect, useTransition, useMemo } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -45,12 +45,12 @@ export default function OngsPage() {
     fetchOngs()
   }, [searchTerm])
 
-  const filteredNgos = ongs.filter(ong => {
+  const filteredNgos = useMemo(() => ongs.filter(ong => {
     const matchesSearch = ong.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ong.description.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCause = causeFilter === "all" || ong.cause === causeFilter
     return matchesSearch && matchesCause
-  })
+  }), [ongs, searchTerm, causeFilter])
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">

@@ -1,0 +1,5 @@
+export { InformationTab } from "./information-tab"
+export { ContactTab } from "./contact-tab"
+export { ActuationTab } from "./actuation-tab"
+export { DocumentsTab } from "./documents-tab"
+export { SuccessMessage } from "./success-message" 
